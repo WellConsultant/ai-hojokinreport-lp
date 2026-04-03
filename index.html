@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>補助金レポート自動生成AI【アルファ版】</title>
+<meta name="description" content="補助金情報の収集・分析・レポート作成をAIが自動で完了。公募要領PDFを読み込むだけで、Wordレポート＋HTMLスライドを数十秒で自動生成。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1A3C6E;
+  --navy-dark: #0F2847;
+  --orange: #FF6B35;
+  --orange-hover: #E85A28;
+  --gray-bg: #F5F5F5;
+  --white: #FFFFFF;
+  --text-main: #333;
+  --text-sub: #666;
+  --text-light: #999;
+  --max-w: 960px;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  color: var(--text-main);
+  font-size: 16px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* --- Section --- */
+.section { width: 100%; padding: clamp(40px, 8vw, 80px) clamp(16px, 4vw, 40px); }
+.inner { max-width: var(--max-w); margin: 0 auto; }
+.bg-navy { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%); color: var(--white); }
+.bg-gray { background: var(--gray-bg); }
+.bg-white { background: var(--white); }
+
+/* --- Typography --- */
+.heading { font-size: clamp(24px, 4vw, 36px); font-weight: 900; line-height: 1.4; margin-bottom: 12px; text-align: center; }
+.heading-navy { color: var(--navy); }
+.heading-white { color: var(--white); }
+.subheading { font-size: clamp(14px, 2.5vw, 18px); text-align: center; margin-bottom: 40px; }
+.divider { width: 80px; height: 3px; background: var(--orange); margin: 0 auto 30px; border: none; }
+
+/* --- CTA Button --- */
+.cta-btn {
+  display: inline-block; background: var(--orange); color: var(--white);
+  font-size: clamp(16px, 3vw, 22px); font-weight: 900;
+  padding: 18px 48px; border-radius: 50px; text-decoration: none; text-align: center;
+  transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255,107,53,0.4); border: none; cursor: pointer;
+}
+.cta-btn:hover { background: var(--orange-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
+.cta-sub { font-size: 13px; color: var(--text-light); text-align: center; margin-top: 12px; }
+.bg-navy .cta-sub { color: rgba(255,255,255,0.5); }
+
+/* --- Pain --- */
+.pain-list { list-style: none; }
+.pain-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 20px; background: var(--white); border-radius: 10px;
+  margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.pain-icon { font-size: 28px; flex-shrink: 0; line-height: 1.2; }
+.pain-text { font-size: clamp(14px, 2.5vw, 16px); color: var(--text-main); }
+.pain-text strong { color: var(--navy); }
+
+/* --- Target --- */
+.target-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.target-card {
+  background: var(--gray-bg); border-radius: 12px; padding: 24px; text-align: center;
+  border: 2px solid transparent; transition: border-color 0.3s;
+}
+.target-card:hover { border-color: var(--orange); }
+.target-icon { font-size: 40px; margin-bottom: 12px; }
+.target-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.target-desc { font-size: 13px; color: var(--text-sub); }
+
+/* --- Steps --- */
+.steps { display: flex; flex-direction: column; gap: 24px; }
+.step {
+  display: flex; align-items: flex-start; gap: 20px;
+  background: var(--white); border-radius: 12px; padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.step-num {
+  flex-shrink: 0; width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  color: var(--white); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 900;
+}
+.step-body h4 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.step-body p { font-size: 14px; color: var(--text-sub); }
+
+/* --- Guarantee --- */
+.guarantee-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+.guarantee-card {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 12px; padding: 24px; text-align: center;
+}
+.guarantee-icon { font-size: 36px; margin-bottom: 12px; }
+.guarantee-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 8px; }
+.guarantee-desc { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.7; }
+.support-box { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; text-align: center; }
+.support-box p { font-size: 14px; color: rgba(255,255,255,0.85); }
+
+/* --- Creator --- */
+.creator {
+  display: flex; align-items: flex-start; gap: 30px;
+  background: var(--gray-bg); border-radius: 16px; padding: 32px;
+}
+.creator-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.creator-name { font-size: 20px; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
+.creator-title { font-size: 14px; color: var(--orange); font-weight: 700; margin-bottom: 12px; }
+.creator-bio { font-size: 14px; color: var(--text-sub); line-height: 1.9; }
+
+/* --- Price --- */
+.price-box { text-align: center; margin-bottom: 30px; }
+.price-regular { font-size: 16px; color: rgba(255,255,255,0.5); text-decoration: line-through; margin-bottom: 4px; }
+.price-main { font-size: clamp(36px, 6vw, 52px); font-weight: 900; color: var(--orange); }
+.price-tax { font-size: 14px; color: rgba(255,255,255,0.6); }
+.price-note { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+
+/* --- Upgrade --- */
+.upgrade-text { font-size: 14px; color: var(--text-sub); text-align: center; }
+
+/* --- Footer --- */
+.footer { text-align: center; padding: 20px; font-size: 12px; color: var(--text-light); background: var(--gray-bg); }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .target-grid { grid-template-columns: 1fr; }
+  .guarantee-grid { grid-template-columns: 1fr; }
+  .creator { flex-direction: column; align-items: center; text-align: center; }
+  .step { flex-direction: column; align-items: center; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="section bg-navy" style="padding-top:clamp(60px,10vw,100px);padding-bottom:clamp(60px,10vw,100px);">
+  <div class="inner" style="text-align:center;">
+    <p style="font-size:clamp(13px,2vw,16px);color:rgba(255,255,255,0.6);margin-bottom:12px;letter-spacing:2px;">AI POWERED SUBSIDY ANALYSIS</p>
+    <h1 style="font-size:clamp(28px,5vw,44px);font-weight:900;color:#fff;line-height:1.4;margin-bottom:16px;">
+      補助金情報の収集・分析・レポート作成<br>すべてAIが自動で完了します
+    </h1>
+    <p style="font-size:clamp(14px,2.5vw,18px);color:rgba(255,255,255,0.75);margin-bottom:40px;">
+      公募要領PDFを読み込むだけ。数十秒でWordレポート＋HTMLスライドを自動生成。
+    </p>
+    <div style="margin-bottom:40px;">
+      <img src="https://raw.githubusercontent.com/WellConsultant/lp-assets/main/images/product_subsidy_ai.png" alt="補助金レポート自動生成AI" style="max-width:320px;width:80%;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+    </div>
+    <div style="margin-bottom:24px;">
+      <span style="font-size:14px;color:rgba(255,255,255,0.5);text-decoration:line-through;">通常価格 29,800円</span><br>
+      <span style="font-size:clamp(36px,6vw,52px);font-weight:900;color:#FF6B35;">980円</span>
+      <span style="font-size:14px;color:rgba(255,255,255,0.6);">（税込）</span>
+      <p style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px;">アルファ版 特別価格</p>
+    </div>
+    <a href="https://www.funnel-build.com/ai-hojokinreport-sp" class="cta-btn">特別価格で試してみる</a>
+    <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;">1週間以内なら全額返金保証付き</p>
+  </div>
+</div>
+
+<!-- PAIN POINTS -->
+<div class="section bg-gray">
+  <div class="inner">
+    <h2 class="heading heading-navy">こんな悩み、ありませんか？</h2>
+    <hr class="divider">
+    <ul class="pain-list">
+      <li class="pain-item">
+        <span class="pain-icon">😩</span>
+        <span class="pain-text"><strong>公募要領が50〜100ページ</strong>もあって、読むだけで半日つぶれる</span>
+      </li>
+      <li class="pain-item">
+        <span class="pain-icon">🔍</span>
+        <span class="pain-text"><strong>補助金情報が散らばっていて</strong>、jGrants・ミラサポ・各省庁サイトを毎日巡回するのが大変</span>
+      </li>
+      <li class="pain-item">
+        <span class="pain-icon">📝</span>
+        <span class="pain-text"><strong>顧客向けレポートの作成に時間がかかりすぎる</strong>。1件あたり2〜3時間は当たり前</span>
+      </li>
+      <li class="pain-item">
+        <span class="pain-icon">📊</span>
+        <span class="pain-text"><strong>セミナーやSNSで使えるスライド資料</strong>も作りたいが、手が回らない</span>
+      </li>
+      <li class="pain-item">
+        <span class="pain-icon">😮‍💨</span>
+        <span class="pain-text"><strong>新しい補助金が出るたびに</strong>同じ作業の繰り返し。もう疲れた...</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- TARGET -->
+<div class="section bg-white">
+  <div class="inner">
+    <h2 class="heading heading-navy">こんな方に最適です</h2>
+    <hr class="divider">
+    <div class="target-grid">
+      <div class="target-card">
+        <div class="target-icon">🏢</div>
+        <div class="target-title">中小企業診断士・コンサルタント</div>
+        <div class="target-desc">補助金支援を効率化し、より多くの顧客に対応したい方</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">📋</div>
+        <div class="target-title">行政書士・社労士</div>
+        <div class="target-desc">補助金情報の収集とレポート作成を自動化したい士業の方</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">🏦</div>
+        <div class="target-title">金融機関の担当者</div>
+        <div class="target-desc">取引先に補助金情報を迅速に提供し、信頼関係を強化したい方</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">🚀</div>
+        <div class="target-title">補助金ビジネスを始めたい方</div>
+        <div class="target-desc">AI活用で参入障壁を下げ、補助金コンサルを新たな収益源にしたい方</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="section bg-gray">
+  <div class="inner">
+    <h2 class="heading heading-navy">使い方はたったの3ステップ</h2>
+    <hr class="divider">
+    <p class="subheading" style="color:#666;">プログラミング知識は不要。ターミナルでコマンドを1つ実行するだけ。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>セットアップ（初回のみ・約10分）</h4>
+          <p>ZIPを展開 → APIキーを設定。同梱のガイドに沿って進めるだけで完了します。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>コマンドを実行</h4>
+          <p>補助金名を入力して実行するだけ。または毎朝7時に自動で全補助金を収集・解析。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>レポート＆スライドが完成</h4>
+          <p>Wordレポート（審査ポイント・CTA付き）とHTMLスライド（SNS・セミナー配布用）が自動生成されます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GUARANTEE -->
+<div class="section bg-navy">
+  <div class="inner">
+    <h2 class="heading heading-white">3つの安心保証</h2>
+    <hr class="divider">
+    <div class="guarantee-grid">
+      <div class="guarantee-card">
+        <div class="guarantee-icon">💬</div>
+        <div class="guarantee-title">保証1：1ヶ月サポート</div>
+        <div class="guarantee-desc">購入から1ヶ月間、セットアップや使い方のご質問にお答えします。メールでいつでもお問い合わせください。</div>
+      </div>
+      <div class="guarantee-card">
+        <div class="guarantee-icon">💰</div>
+        <div class="guarantee-title">保証2：返金保証</div>
+        <div class="guarantee-desc">「自分には合わない」と感じたら、購入から1ヶ月以内にご連絡ください。全額返金いたします。</div>
+      </div>
+      <div class="guarantee-card">
+        <div class="guarantee-icon">🛡️</div>
+        <div class="guarantee-title">保証3：利用規約不同意の返金</div>
+        <div class="guarantee-desc">利用規約に同意いただけない場合は、購入から1週間以内のご連絡で全額返金いたします。</div>
+      </div>
+    </div>
+    <div class="support-box">
+      <p>💡 チャットワークで随時お問い合わせ可能。問題があればすぐにご報告いただけます。</p>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE -->
+<div class="section bg-gray" style="padding-top:30px;padding-bottom:30px;">
+  <div class="inner">
+    <p class="upgrade-text">※ アップグレードオプションは現在ご用意しておりません。今後のアップデートをお楽しみに。</p>
+  </div>
+</div>
+
+<!-- CREATOR -->
+<div class="section bg-white">
+  <div class="inner">
+    <h2 class="heading heading-navy">製作者</h2>
+    <hr class="divider">
+    <div class="creator">
+      <img src="https://raw.githubusercontent.com/WellConsultant/lp-assets/main/images/profile_akutsu.png" alt="阿久津 和宏" class="creator-photo">
+      <div>
+        <div class="creator-name">阿久津 和宏</div>
+        <div class="creator-title">Well Consultant合同会社 代表</div>
+        <div class="creator-bio">
+          中小企業の経営支援・補助金申請サポートに携わる中で、「補助金情報の収集と分析に膨大な時間がかかる」という課題に直面。AIを活用してこの課題を解決するツールを開発しました。<br><br>
+          補助金コンサルタントとしての実務経験と、AI・プログラミングの知識を組み合わせ、「本当に現場で使えるツール」をお届けします。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL CTA -->
+<div class="section bg-navy" style="padding-top:clamp(50px,8vw,80px);padding-bottom:clamp(50px,8vw,80px);">
+  <div class="inner" style="text-align:center;">
+    <h2 class="heading heading-white">今すぐ始めましょう</h2>
+    <hr class="divider">
+    <p style="font-size:clamp(14px,2.5vw,17px);color:rgba(255,255,255,0.75);margin-bottom:30px;">
+      補助金情報の収集・分析・レポート作成を<br>AIに任せて、あなたはコンサルティングに集中。
+    </p>
+    <div class="price-box">
+      <div class="price-regular">通常価格 29,800円</div>
+      <div class="price-main">980円</div>
+      <div class="price-tax">（税込）</div>
+      <div class="price-note">アルファ版 特別価格 ／ 買い切り・月額なし</div>
+    </div>
+    <a href="https://www.funnel-build.com/ai-hojokinreport-sp" class="cta-btn">特別価格で試してみる</a>
+    <p class="cta-sub">購入後すぐにダウンロードリンクが届きます ／ 1週間以内なら全額返金保証</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  &copy; 2026 Well Consultant合同会社
+</div>
+
+</body>
+</html>
